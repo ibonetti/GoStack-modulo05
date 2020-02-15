@@ -33,7 +33,9 @@ export default class Main extends Component {
   }
 
   handleInputChange = e => {
-    this.setState({ newRepo: e.target.value });
+    let { error } = this.state;
+    error = e.target.value !== '' && error;
+    this.setState({ newRepo: e.target.value, error });
   };
 
   handleSubmit = async e => {
