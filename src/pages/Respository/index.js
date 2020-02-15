@@ -2,12 +2,27 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import api from '../../services/api';
-import { Loading, Owner, IssueList } from './styles';
+import { Loading, Owner, IssueList, IssueFilter, Pager } from './styles';
 import Container from '../../components/container';
 
 // import { Container } from './styles';
 
 export default class Repository extends Component {
+  actions = {
+    next: async () => {
+      const { page } = this.state;
+      this.setState({ page: page + 1 });
+    },
+    previous: async () => {
+      const { page } = this.state;
+      let newPage = page - 1;
+      if (newPage < 1) {
+        newPage = 1;
+      }
+      this.setState({ page: newPage });
+    },
+  };
+
   static propTypes = {
     match: PropTypes.shape({
       params: PropTypes.shape({
@@ -20,10 +35,19 @@ export default class Repository extends Component {
     repository: {},
     issues: [],
     loading: true,
+    filterList: [
+      { state: 'all', label: 'Todas', active: true },
+      { state: 'open', label: 'Abertas', active: false },
+      { state: 'closed', label: 'Fechadas', active: false },
+    ],
+    filterIndex: 0,
+    page: 1,
+    perPage: 5,
   };
 
   async componentDidMount() {
     const { match } = this.props;
+    const { filterList, filterIndex, page, perPage } = this.state;
 
     const repoName = decodeURIComponent(match.params.repository);
 
@@ -31,8 +55,9 @@ export default class Repository extends Component {
       api.get(`/repos/${repoName}`),
       api.get(`/repos/${repoName}/issues`, {
         params: {
-          state: 'open',
-          per_page: 5,
+          state: filterList[filterIndex].state,
+          per_page: perPage,
+          page,
         },
       }),
     ]);
@@ -43,8 +68,43 @@ export default class Repository extends Component {
     });
   }
 
+  loadIssues = async () => {
+    const { match } = this.props;
+    const { filterList, filterIndex, page, perPage } = this.state;
+
+    const repoName = decodeURIComponent(match.params.repository);
+
+    const response = await api.get(`/repos/${repoName}/issues`, {
+      params: {
+        state: filterList[filterIndex].state,
+        per_page: perPage,
+        page,
+      },
+    });
+
+    this.setState({ issues: response.data });
+  };
+
+  handleFilterClick = async filterIndex => {
+    await this.setState({ filterIndex });
+    this.loadIssues();
+  };
+
+  handlePagerClick = async action => {
+    const act = this.actions[action];
+    await act();
+    this.loadIssues();
+  };
+
   render() {
-    const { repository, issues, loading } = this.state;
+    const {
+      repository,
+      issues,
+      loading,
+      filterList,
+      filterIndex,
+      page,
+    } = this.state;
 
     if (loading) {
       return <Loading>Carregando</Loading>;
@@ -60,6 +120,17 @@ export default class Repository extends Component {
         </Owner>
 
         <IssueList>
+          <IssueFilter active={filterIndex}>
+            {filterList.map((filter, index) => (
+              <button
+                type="button"
+                key={filter.label}
+                onClick={() => this.handleFilterClick(index)}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </IssueFilter>
           {issues.map(issue => (
             <li key={String(issue.id)}>
               <img src={issue.user.avatar_url} alt={issue.user.login} />
@@ -75,6 +146,19 @@ export default class Repository extends Component {
             </li>
           ))}
         </IssueList>
+        <Pager>
+          <button
+            type="button"
+            disabled={page < 2}
+            onClick={() => this.handlePagerClick('previous')}
+          >
+            Anterior
+          </button>
+          <span>Página {page}</span>
+          <button type="button" onClick={() => this.handlePagerClick('next')}>
+            Próximo
+          </button>
+        </Pager>
       </Container>
     );
   }

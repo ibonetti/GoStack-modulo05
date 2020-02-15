@@ -97,7 +97,46 @@ export const IssueList = styled.ul`
     p {
       margin-top: 5px;
       font-size: 12px;
-      color #999;
+      color: #999;
+    }
+  }
+`;
+
+export const IssueFilter = styled.div`
+  display: flex;
+  justify-content: center;
+  padding-bottom: 15px;
+  button {
+    border-radius: 4px;
+    outline: 0;
+    border: 0;
+    padding: 8px;
+    margin: 0 0.25rem;
+    &:nth-child(${props => props.active + 1}) {
+      background: #576574;
+      color: white;
+    }
+  }
+`;
+
+export const Pager = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20px;
+  button {
+    transition: opacity 0.5s ease-out;
+    padding: 10px;
+    border-radius: 4px;
+    background: #576574;
+    color: white;
+    &:hover {
+      background: #7159c1;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
     }
   }
 `;
