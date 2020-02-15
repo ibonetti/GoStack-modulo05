@@ -125,7 +125,7 @@ export const Pager = styled.div`
   align-items: center;
   padding-top: 20px;
   button {
-    transition: opacity 0.5s ease-out;
+    transition: opacity 0.3s ease-out;
     padding: 10px;
     border-radius: 4px;
     background: #576574;

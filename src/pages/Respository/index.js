@@ -155,7 +155,11 @@ export default class Repository extends Component {
             Anterior
           </button>
           <span>Página {page}</span>
-          <button type="button" onClick={() => this.handlePagerClick('next')}>
+          <button
+            type="button"
+            onClick={() => this.handlePagerClick('next')}
+            disabled={issues.length === 0}
+          >
             Próximo
           </button>
         </Pager>
